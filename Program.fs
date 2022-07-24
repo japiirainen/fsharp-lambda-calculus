@@ -36,12 +36,13 @@ let rec pSingle (ts: Tok list) =
   | Lambda::Var arg::Dot::b ->
     Result.map (fun (body, rest) -> (TLambda (arg, body), rest)) (pSingle b) 
   | LParen::code ->
-    Result.bind (fun (fn, rest) ->
-      Result.bind (fun (value, rest') ->
-        match rest' with
+    pSingle code
+    |> Result.bind (fun (fn, rest) ->
+    pSingle rest
+      |> Result.bind (fun (value, rest') ->
+       match rest' with
         | RParen::rest'' -> Ok (TApp (fn, value), rest'')
-        | _ -> Error "Expected a righ paren ')'"
-        ) (pSingle rest)) (pSingle code)
+        | _ -> Error "Expected a righ paren ')'"))
   | _ -> Error "Failed to parse."
 
 
